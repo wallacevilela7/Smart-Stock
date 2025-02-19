@@ -1,6 +1,7 @@
 package tech.wvs.smartstock.service;
 
 import org.springframework.stereotype.Service;
+import tech.wvs.smartstock.domain.CsvStockItem;
 
 import java.io.IOException;
 
@@ -13,21 +14,28 @@ public class SmartStockService {
         this.reportService = reportService;
     }
 
-    public void start(String reporPath){
+    public void start(String reportPath) {
 
-        //TODO 1: ler o arquivo csv
+
         try {
-            var items = reportService.readStockReport(reporPath);
+            var items = reportService.readStockReport(reportPath);
 
-        } catch (IOException e) {
+            items.forEach(item -> {
+
+                if (item.getQuantity() < item.getReorderThreshold()) {
+
+                    var reorderQuantity = calculateReorderQuantity(item);
+                }
+                
+            });
+
+        } catch (
+                IOException e) {
             throw new RuntimeException();
         }
-
-        //TODO 2: para cada item do csv chamar a api do setor de compras
-
-
-
-        //TODO 3: salvar no mongodb os itens que foram recomprados
     }
 
+    private Integer calculateReorderQuantity(CsvStockItem item) {
+        return item.getReorderThreshold() + ((int) Math.ceil(item.getReorderThreshold() * 0.2));
+    }
 }
